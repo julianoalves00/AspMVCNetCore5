@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Products images  folder
+Source/Rocky/Rocky/wwwroot/images/product/
