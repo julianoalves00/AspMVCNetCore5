@@ -13,6 +13,6 @@ namespace Rocky.Models.ViewModels
         }
 
         public Product Product { get; set; }
-        public bool ExistsinCart { get; set; }
+        public bool ExistsInCart { get; set; }
     }
 }
