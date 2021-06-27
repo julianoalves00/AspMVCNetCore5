@@ -1,7 +1,8 @@
-﻿@model Rocky.Models.ViewModels.ProductVM
+﻿@model Rocky_Models.ViewModels.ProductVM
+@using Rocky_Utility
 
-@{ 
-    var title = "Create Product"; 
+@{
+    var title = "Create Product";
 }
 
 <form method="post" enctype="multipart/form-data">
@@ -116,8 +117,8 @@
 @section Scripts{
 
     @*@{
-        <partial name="_ValidationScriptsPartial" />
-    }*@
+            <partial name="_ValidationScriptsPartial" />
+        }*@
     <script>
         $(document).ready(function () {
             $('.summernote').summernote({

@@ -1,4 +1,5 @@
-﻿@model Rocky.Models.Product
+﻿@model Rocky_Models.Product
+@using Rocky_Utility
 
 <form method="post">
     <input asp-for="Id" hidden />
@@ -79,7 +80,7 @@
         $(document).ready(function () {
             $('.summernote').summernote({
                 height: 250,
-                disable:true
+                disable: true
             });
         });
     </script>

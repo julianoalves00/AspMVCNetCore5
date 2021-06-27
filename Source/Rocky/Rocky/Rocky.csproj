@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -21,6 +21,12 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\product\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rocky_DataAccess\Rocky_DataAccess.csproj" />
+    <ProjectReference Include="..\Rocky_models\Rocky_models.csproj" />
+    <ProjectReference Include="..\Rocky_Utility\Rocky_Utility.csproj" />
   </ItemGroup>
 
 </Project>
