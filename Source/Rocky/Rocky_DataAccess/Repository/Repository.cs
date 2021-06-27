@@ -40,16 +40,15 @@ namespace Rocky_DataAccess.Repository
             }
             if (includeProperties != null)
             {
-                foreach (var includeProp in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query.Include(includeProp);
+                    query = query.Include(includeProp);
                 }
             }
             if (!isTracking)
             {
                 query = query.AsNoTracking();
             }
-
             return query.FirstOrDefault();
         }
 
