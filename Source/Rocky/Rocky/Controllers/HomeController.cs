@@ -86,6 +86,9 @@ namespace Rocky.Controllers
             }
 
             HttpContext.Session.Set(WC.SessionCart, shoppingCartList);
+            
+            TempData[WC.Success] = "Product removed from cart successfully!";
+
             return RedirectToAction(nameof(Index));
         }
 

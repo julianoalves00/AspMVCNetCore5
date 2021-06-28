@@ -121,6 +121,12 @@ namespace Rocky.Controllers
                 }
 
                 _prodRepo.Save();
+
+                if (productVM.Product.Id == 0)
+                    TempData[WC.Success] = "Product added successfully!";
+                else
+                    TempData[WC.Success] = "Product edited successfully!";
+
                 return RedirectToAction("Index");
             }
 
@@ -144,7 +150,6 @@ namespace Rocky.Controllers
             if (product == null)
             {
                 return NotFound();
-
             }
 
             return View(product);
@@ -173,6 +178,7 @@ namespace Rocky.Controllers
 
             _prodRepo.Remove(obj);
             _prodRepo.Save();
+            TempData[WC.Success] = "Product deleted successfully!";
             return RedirectToAction("Index");
         }
     }

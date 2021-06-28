@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Rocky_DataAccess.Repository.IRepository;
 using Rocky_Models;
 using Rocky_Models.ViewModels;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Rocky.Controllers
 {
+    [Authorize(Roles = WC.AdminRole)]
     public class InquiryController : Controller
     {
         private readonly IInquiryHeaderRepository _inqHRepo;
@@ -69,6 +71,8 @@ namespace Rocky.Controllers
             _inqDRepo.RemoveRange(inquiryDetails);
             _inqHRepo.Remove(inquiryHeader);
             _inqHRepo.Save();
+
+            TempData[WC.Success] = "Inquiry removed successfully!";
 
             return RedirectToAction(nameof(Index));
         }
