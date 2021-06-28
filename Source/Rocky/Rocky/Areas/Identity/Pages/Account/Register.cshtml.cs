@@ -27,7 +27,6 @@ namespace Rocky.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
@@ -35,11 +34,11 @@ namespace Rocky.Areas.Identity.Pages.Account
             IEmailSender emailSender,
             RoleManager<IdentityRole> roleManager)
         {
+            _roleManager = roleManager;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
-            _roleManager = roleManager;
         }
 
         [BindProperty]
@@ -66,19 +65,14 @@ namespace Rocky.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-
+            [Required]
             public string FullName { get; set; }
-
+            [Required]
             public string PhoneNumber { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if (!await _roleManager.RoleExistsAsync(WC.AdminRole))
-                await _roleManager.CreateAsync(new IdentityRole(WC.AdminRole));
-
-            if (!await _roleManager.RoleExistsAsync(WC.CustomerRole))
-                await _roleManager.CreateAsync(new IdentityRole(WC.CustomerRole));
 
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -86,24 +80,29 @@ namespace Rocky.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/");
+            returnUrl = returnUrl ?? Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email, PhoneNumber = Input.PhoneNumber, FullName = Input.FullName };
+                var user = new ApplicationUser
+                {
+                    UserName = Input.Email,
+                    Email = Input.Email,
+                    PhoneNumber = Input.PhoneNumber,
+                    FullName = Input.FullName
+                };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
                     if (User.IsInRole(WC.AdminRole))
                     {
-                        //an admin has loggedin and they try to create a new user
+                        //an admin has logged in and they try to create a new user
                         await _userManager.AddToRoleAsync(user, WC.AdminRole);
                     }
                     else
                     {
                         await _userManager.AddToRoleAsync(user, WC.CustomerRole);
                     }
-                    
 
                     _logger.LogInformation("User created a new account with password.");
 
@@ -126,14 +125,15 @@ namespace Rocky.Areas.Identity.Pages.Account
                     {
                         if (User.IsInRole(WC.AdminRole))
                         {
-                            //return Page();
-                            return RedirectToAction("Index");
+                            TempData[WC.Success] = user.FullName + " has been registered";
+                            return RedirectToAction("Index", "Home");
                         }
                         else
                         {
                             await _signInManager.SignInAsync(user, isPersistent: false);
+                            return LocalRedirect(returnUrl);
                         }
-                        return LocalRedirect(returnUrl);
+
                     }
                 }
                 foreach (var error in result.Errors)

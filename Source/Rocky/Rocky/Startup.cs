@@ -11,6 +11,7 @@ using Rocky_DataAccess;
 using Rocky_DataAccess.Repository;
 using Rocky_DataAccess.Repository.IRepository;
 using Rocky_Utility;
+using Rocky_Utility.BrainTree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,12 +45,24 @@ namespace Rocky
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            services.Configure<BrainTreeSettings>(Configuration.GetSection("BrainTree"));
+            services.AddSingleton<IBrainTreeGate, BrainTreeGate>();
+
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IInquiryHeaderRepository, InquiryHeaderRepository>();
             services.AddScoped<IInquiryDetailRepository, InquiryDetailRepository>();
             services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
+            services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
+            services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+
+            services.AddAuthentication().AddFacebook(options => 
+            { 
+                options.AppId = "3011097649126927";
+                options.AppSecret = "80593e26a49ff9731f35b27ab2dd6ba8";
+            });
 
             services.AddControllersWithViews();
         }
