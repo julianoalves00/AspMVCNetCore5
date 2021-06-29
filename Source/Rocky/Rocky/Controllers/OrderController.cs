@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Braintree;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Rocky_DataAccess.Repository.IRepository;
+using Rocky_Models;
 using Rocky_Models.ViewModels;
 using Rocky_Utility;
 using Rocky_Utility.BrainTree;
@@ -11,12 +14,15 @@ using System.Threading.Tasks;
 
 namespace Rocky.Controllers
 {
+    [Authorize(Roles = WC.AdminRole)]
     public class OrderController : Controller
     {
         private readonly IOrderHeaderRepository _orderHRepo;
         private readonly IOrderDetailRepository _orderDRepo;
         private readonly IBrainTreeGate _brain;
 
+        [BindProperty]
+        public OrderVM OrderVM { get; set; }
 
         public OrderController(IOrderHeaderRepository orderHRepo, IOrderDetailRepository orderDRepo, IBrainTreeGate brain)
         {
@@ -43,6 +49,85 @@ namespace Rocky.Controllers
                 orderListVM.OrderHList = orderListVM.OrderHList.Where(u => u.OrderStatus.ToLower().Contains(Status.ToLower()));
 
             return View(orderListVM);
+        }
+
+        public IActionResult Details(int id)
+        {
+            OrderVM = new OrderVM()
+            {
+                OrderHeader = _orderHRepo.FirstOrDefault(u => u.Id == id),
+                OrderDetail = _orderDRepo.GetAll(u => u.OrderHeaderId == id, includeProperties: "Product")
+            };
+
+            return View(OrderVM);
+        }
+
+        [HttpPost]
+        public IActionResult StartProcessing()
+        {
+            OrderHeader orderHeader = _orderHRepo.FirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id);
+            orderHeader.OrderStatus = WC.StatusInProcess;
+            _orderHRepo.Save();
+
+            TempData[WC.Success] = "Order processed successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public IActionResult ShipOrder()
+        {
+            OrderHeader orderHeader = _orderHRepo.FirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id);
+            orderHeader.OrderStatus = WC.StatusShipped;
+            orderHeader.ShippingDate = DateTime.Now;
+            _orderHRepo.Save();
+
+            TempData[WC.Success] = "Order shipped successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public IActionResult CancelOrder()
+        {
+            OrderHeader orderHeader = _orderHRepo.FirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id);
+
+            var gateway = _brain.GetGateway();
+            Transaction transaction = gateway.Transaction.Find(orderHeader.TransactionId);
+
+            if(transaction.Status == TransactionStatus.AUTHORIZED || transaction.Status == TransactionStatus.SUBMITTED_FOR_SETTLEMENT)
+            {
+                // no refund
+                Result<Transaction> resultvoid = gateway.Transaction.Void(orderHeader.TransactionId);
+            }
+            else
+            {
+                // refund
+                Result<Transaction> resultRefound = gateway.Transaction.Refund(orderHeader.TransactionId);
+            }
+
+            orderHeader.OrderStatus = WC.StatusRefunded;
+            _orderHRepo.Save();
+
+            TempData[WC.Success] = "Order canceled successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrderDetails()
+        {
+            OrderHeader orderHeaderFromDb = _orderHRepo.FirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id);
+            orderHeaderFromDb.FullName = OrderVM.OrderHeader.FullName;
+            orderHeaderFromDb.PhoneNumber = OrderVM.OrderHeader.PhoneNumber;
+            orderHeaderFromDb.StreetAddress = OrderVM.OrderHeader.StreetAddress;
+            orderHeaderFromDb.City = OrderVM.OrderHeader.City;
+            orderHeaderFromDb.State = OrderVM.OrderHeader.State;
+            orderHeaderFromDb.PostalCode = OrderVM.OrderHeader.PostalCode;
+            orderHeaderFromDb.Email = OrderVM.OrderHeader.Email;
+
+            _orderHRepo.Save();
+
+            TempData[WC.Success] = "Order details updated successfully!";
+
+            return RedirectToAction("Details", "Order", new { id = orderHeaderFromDb.Id });
         }
     }
 }
