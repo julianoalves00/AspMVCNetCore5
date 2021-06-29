@@ -217,7 +217,7 @@ namespace Rocky.Controllers
                 var gateway = _brain.GetGateway();
                 Result<Transaction> result = gateway.Transaction.Sale(request);
 
-                if(result.Target.ProcessorResponseText == "Approved")
+                if(result.Target?.ProcessorResponseText == "Approved")
                 {
                     orderHeader.TransactionId = result.Target.Id;
                     orderHeader.OrderStatus = WC.StatusApproved;
