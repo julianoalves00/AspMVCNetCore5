@@ -3,3 +3,11 @@ Curse Links
 	https://github.com/DotNetMastery/Rocky
 
 	https://www.dotnetmastery.com/Home/Details?courseId=12
+	
+	
+Azure 
+	SQL
+		adminuser
+		Admin123*
+		
+	Data Source=tcp:rockydb.database.windows.net,1433;Initial Catalog=Rockydb;User Id=adminuser@rockydb;Password=Admin123*
